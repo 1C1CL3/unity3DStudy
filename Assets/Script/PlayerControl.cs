@@ -105,6 +105,7 @@ public class PlayerControl : MonoBehaviour
     private void moveControl()
     {
         bool isMoved = false;
+        
         Vector3 moveVector = Vector3.zero; // 이동용 벡터
         Vector3 postion = this.transform.position; // 현재 위치 보관
 
@@ -148,10 +149,11 @@ public class PlayerControl : MonoBehaviour
         //이동 벡터의 길이가 0.01보다 큰경우       
         //어느 정도 이상의 이동한 경우.
         if (moveVector.magnitude > 0.01f)
-        {
+        {           
             //캐릭터의 방향을 천천히 바꾼다.
             Quaternion q = Quaternion.LookRotation(moveVector, Vector3.up);
             this.transform.rotation = Quaternion.Lerp(this.transform.rotation, q, 0.1f);
+            Debug.Log("transform.rotation작동중");
         }
     }
 
@@ -198,14 +200,14 @@ public class PlayerControl : MonoBehaviour
             heading.y = 0.0f;
             to_other.y = 0.0f;
 
-            heading.Normalize();//백터의 길이를 1로 하고 방향만가져온다
-            to_other.Normalize();//백터의 길이를 1로 하고 방향만가져온다
-            float dp = Vector3.Dot(heading, to_other);// 양쪽의 벡터의 내적을 취득 바라보고있는 방향 기준으로 내적1이며 맨뒤는 -1이다. 
-            if (dp < Mathf.Cos(45.0f))// 내적이 cos45 값 미만이면 cos45 = 2/루트2 = 0.707...
+            heading.Normalize();                        //백터의 길이를 1로 하고 방향만가져온다
+            to_other.Normalize();                       //백터의 길이를 1로 하고 방향만가져온다
+            float dp = Vector3.Dot(heading, to_other);  // 양쪽의 벡터의 내적을 취득 바라보고있는 방향 기준으로 내적1이며 맨뒤는 -1이다. 
+            if (dp < Mathf.Cos(45.0f))                  // 내적이 cos45 값 미만이면 cos45 = 2/루트2 = 0.707...
             {
-                break;// 루푸를 빠져 나간다
+                break;                                  // 루푸를 빠져 나간다
             }
-            ret = true; // 내적이 45도의 코사인 값 이상이면 정면에 있다.
+            ret = true;                                 // 내적이 45도의 코사인 값 이상이면 정면에 있다.
         } while (false);
         return (ret);
     }
@@ -260,19 +262,19 @@ public class PlayerControl : MonoBehaviour
     {
         this.get_input(); // 입력 함수 업데이트
         this.step_timer += Time.deltaTime;
-        float eat_time= 2.0f;                   // 사과는 2초에 걸쳐 먹는다
+        float eat_time= 2.0f;                       // 사과는 2초에 걸쳐 먹는다
 
         // 상태가 변했을때------------------
-        if(this.next_step == STEP.NONE)         //다음 예정이 없으면
+        if(this.next_step == STEP.NONE)             //다음 예정이 없으면
         {
             switch(this.step)                   
             {
-                case STEP.MOVE:                 //이동중 상태의 처리
+                case STEP.MOVE:                     //이동중 상태의 처리
                     do
                     {
-                        if (!this.key.action)   //액션 키 눌려있지 않다
+                        if (!this.key.action)       //액션 키 눌려있지 않다
                         {
-                            break;              //루프 탈출
+                            break;                  //루프 탈출
                         }
                         if (this.carriedItem != null)// 가지고 있는 아이템 판별
                         {
@@ -280,8 +282,8 @@ public class PlayerControl : MonoBehaviour
 
                             switch (carriedItemType)
                             {
-                                case Item.TYPE.APPLE: //사과라면
-                                case Item.TYPE.PLANT: //식물이라면
+                                case Item.TYPE.APPLE:           //사과라면
+                                case Item.TYPE.PLANT:           //식물이라면
                                     this.next_step = STEP.EATING;// 식사중 상태로 이행
                                     break;
                             }
@@ -329,7 +331,6 @@ public class PlayerControl : MonoBehaviour
                 this.pick_or_drop_control();
                 break;
         }
-
        
     }
 }
