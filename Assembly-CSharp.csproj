@@ -58,6 +58,7 @@
   <ItemGroup>
     <Compile Include="Assets\Script\ItemRoot.cs" />
     <Compile Include="Assets\Script\PlayerControl.cs" />
+    <Compile Include="Assets\Script\EventRoot.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="UnityEngine">
