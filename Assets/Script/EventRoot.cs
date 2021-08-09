@@ -42,16 +42,33 @@ public class EventRoot : MonoBehaviour
             case Event.TYPE.ROCKET:                 
                 if(carried_item == Item.TYPE.IRON)//가지고있는 것이 철광석이라면
                 {
-                    ret = true;
+                    ret = true;                   //이벤트 가능
                 }
-                if(carried_item == Item.TYPE.PLANT)
+                if(carried_item == Item.TYPE.PLANT)//가지고있는것이 식물이라면
                 {
-                    ret = true;
+                    ret = true;                     //이벤트 가능
                 }
                 break;
         }
-        return (ret);       
+        return (ret);
     }
+    public string getIgnitableMessage(GameObject event_go)
+    {
+        string message="";
+        Event.TYPE type = Event.TYPE.NONE;
+        if(event_go != null)
+        {
+            type = this.getEventType(event_go);
+        }
+        switch (type)
+        {
+            case Event.TYPE.ROCKET:
+                message = "수리한다";
+                break;
+        }
+        return(message);
+    }
+
 
 
 }
