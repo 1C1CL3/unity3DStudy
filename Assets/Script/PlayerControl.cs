@@ -48,7 +48,18 @@ public class PlayerControl : MonoBehaviour
         if(this.carriedItem != null)
         {
             GUI.Label(new Rect(x, y, 200.0f, 20.0f),"Z:버린다",guistyle);
-            GUI.Label(new Rect(x + 100.0f, y, 200.0f, 20.0f), "X:먹는다", guistyle);
+            do
+            {
+                if (this.is_event_ignitable())
+                {
+                    break;
+                }
+                if (item_root.getItemType(this.carriedItem) == Item.TYPE.IRON)
+                {
+                    break;
+                }
+                GUI.Label(new Rect(x + 100.0f, y, 200.0f, 20.0f), "X:먹는다", guistyle);
+            } while (false);           
         }
         else
         {
@@ -63,6 +74,16 @@ public class PlayerControl : MonoBehaviour
             case STEP.EATING:
                 GUI.Label(new Rect(x, y, 200.0f, 20.0f), "우걱우걱우물우물...", guistyle);
                 break;
+            case STEP.REPAIRING:
+                GUI.Label(new Rect(x + 200.0f, y, 200.0f, 20.0f), "수리중",guistyle);
+                break;
+        }
+
+        if(this.is_event_ignitable())//이벤트 시작이 가능한 경우
+        {
+            //이벤트 메세지 획득
+            string message = this.event_root.getIgnitableMessage(this.close_event);
+            GUI.Label(new Rect(x + 200.0f, y, 200.0f, 20.0f), "X: " + message, guistyle);
         }
 
     }
@@ -100,7 +121,7 @@ public class PlayerControl : MonoBehaviour
         
 
         //x키가 눌렸으면 true
-        this.key.action |= Input.GetKeyDown(KeyCode.X);
+        this.key.action = Input.GetKeyDown(KeyCode.X);
         this.key.action |= Input.GetKeyDown(KeyCode.Mouse1);
 
         
@@ -316,8 +337,8 @@ public class PlayerControl : MonoBehaviour
         this.get_input(); // 입력 함수 업데이트
         this.step_timer += Time.deltaTime;
         float eat_time= 2.0f;                       // 사과는 2초에 걸쳐 먹는다
-
-        // 상태가 변했을때------------------
+        float repair_time = 2.0f;                   //수리에 걸리는 시간 2초
+        // 상태가 변화시킨다------------------
         if(this.next_step == STEP.NONE)             //다음 예정이 없으면
         {
             switch(this.step)                   
@@ -329,6 +350,25 @@ public class PlayerControl : MonoBehaviour
                         {
                             break;                  //루프 탈출
                         }
+                        //주목하는 이벤트가 있을때
+                        if(this.close_event != null)
+                        {
+                            if(!this.is_event_ignitable()) // 이벤트를 시작할수 있으면
+                            {
+                                break;
+                            }
+                            //이벤트 종류를 가져온다
+                            Event.TYPE ignitable_event = this.event_root.getEventType(this.close_event);
+                            switch(ignitable_event)
+                            {
+                                case Event.TYPE.ROCKET:
+                                    //이벤트 타입이 로켓이면 Repaing수리 상태로 이행
+                                    this.next_step = STEP.REPAIRING;
+                                    break;
+                            }
+                            break;
+                        }
+
                         if (this.carriedItem != null)// 가지고 있는 아이템 판별
                         {
                             Item.TYPE carriedItemType = this.item_root.getItemType(this.carriedItem);
@@ -336,7 +376,7 @@ public class PlayerControl : MonoBehaviour
                             switch (carriedItemType)
                             {
                                 case Item.TYPE.APPLE:           //사과라면
-                                case Item.TYPE.PLANT:           //식물이라면
+                                //case Item.TYPE.PLANT:           //식물이라면
                                     this.next_step = STEP.EATING;// 식사중 상태로 이행
                                     break;
                             }
@@ -350,10 +390,16 @@ public class PlayerControl : MonoBehaviour
                         this.next_step = STEP.MOVE;     //이동 상태로 이행
                     }
                     break;
-                    
+                case STEP.REPAIRING:
+                    if (this.step_timer > repair_time)
+                    {
+                        this.next_step = STEP.MOVE;
+                    }
+                    break;
+                
             }
         }
-        // 상태가 변화하지 않을때
+        // 상태가 변화했을때---------
         while (this.next_step != STEP.NONE)
         {
             this.step = this.next_step;
@@ -371,7 +417,15 @@ public class PlayerControl : MonoBehaviour
                         this.carriedItem = null;
                     }
                     break;
-
+                case STEP.REPAIRING:
+                    if (this.carriedItem != null)
+                    {
+                        //가지고있던 아이템 삭제
+                        GameObject.Destroy(this.carriedItem);
+                        this.carriedItem = null;
+                        this.closestItem = null;
+                    }
+                    break;
             }
             this.step_timer = 0.0f;
         }
@@ -383,7 +437,12 @@ public class PlayerControl : MonoBehaviour
                 this.moveControl();
                 this.pick_or_drop_control();
                 break;
+            case STEP.REPAIRING:
+                //우주선을 회전시킨다.
+                this.rocket_model.transform.localRotation *= Quaternion.AngleAxis(360.0f / 10.0f * Time.deltaTime, Vector3.up);
+                break;
         }
+
        
     }
 }
